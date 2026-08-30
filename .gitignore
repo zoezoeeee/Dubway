@@ -1,3 +1,36 @@
-node_modules/
+# Environment secrets
 .env
+.env.*
+!.env.example
+!.env.*.example
+
+# Dependencies and build output
+node_modules/
 dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Python environments and generated files
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editor and operating system files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Local logs and temporary files
+*.log
+tmp/
+temp/
