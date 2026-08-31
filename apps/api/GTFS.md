@@ -11,6 +11,7 @@ Use this attribution in the product where static GTFS data is displayed:
 ## Refreshing local data
 
 1. Open the NTA GTFS portal and copy the current static GTFS archive URL.
+
 2. From `apps/api`, run:
 
    ```bash
@@ -21,6 +22,7 @@ Use this attribution in the product where static GTFS data is displayed:
 
    ```text
    data/gtfs/stops.txt
+   data/gtfs/routes.txt
    data/gtfs/metadata.json
    ```
 
@@ -30,7 +32,12 @@ Use this attribution in the product where static GTFS data is displayed:
 5. Run a lookup to verify the imported feed:
 
    ```bash
-   python find_stop_id.py 842
+   python -c "from gtfs_lookup import find_stop_by_code; print(find_stop_by_code('842'))"
+   ```
+
+   For route metadata:
+   ```bash
+   python -c "from gtfs_lookup import find_route_by_short_name; print(find_route_by_short_name('120'))"
    ```
 
 Refresh static GTFS before releasing any change that depends on stop, route, or

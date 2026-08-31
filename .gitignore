@@ -34,3 +34,6 @@ htmlcov/
 *.log
 tmp/
 temp/
+
+
+data/gtfs/

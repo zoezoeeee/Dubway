@@ -14,7 +14,7 @@ DEFAULT_OUTPUT_DIRECTORY = API_DIRECTORY / "data" / "gtfs"
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description="Download and extract stops.txt from an NTA static GTFS archive."
+        description="Download and extract GTFS static files from an NTA archive."
     )
     parser.add_argument(
         "--url",
@@ -30,15 +30,15 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def get_stops_member(archive: ZipFile) -> str:
+def get_gtfs_member(archive: ZipFile, filename: str) -> str:
     matches = [
         member
         for member in archive.namelist()
-        if Path(member).name.lower() == "stops.txt"
+        if Path(member).name.lower() == filename.lower()
     ]
 
     if len(matches) != 1:
-        raise RuntimeError("The GTFS archive must contain exactly one stops.txt file.")
+        raise RuntimeError(f"The GTFS archive must contain exactly one {filename} file.")
 
     return matches[0]
 
@@ -51,14 +51,21 @@ def main():
         archive_bytes = response.read()
 
     with ZipFile(BytesIO(archive_bytes)) as archive:
-        stops_member = get_stops_member(archive)
+        stops_member = get_gtfs_member(archive, "stops.txt")
+        routes_member = get_gtfs_member(archive, "routes.txt")
+
         stops_bytes = archive.read(stops_member)
+        routes_bytes = archive.read(routes_member)
 
     output_directory.mkdir(parents=True, exist_ok=True)
+
     stops_path = output_directory / "stops.txt"
+    routes_path = output_directory / "routes.txt"
     metadata_path = output_directory / "metadata.json"
 
     stops_path.write_bytes(stops_bytes)
+    routes_path.write_bytes(routes_bytes)
+
     metadata_path.write_text(
         json.dumps(
             {
@@ -66,6 +73,7 @@ def main():
                 "downloaded_at": datetime.now(timezone.utc).isoformat(),
                 "archive_sha256": hashlib.sha256(archive_bytes).hexdigest(),
                 "stops_sha256": hashlib.sha256(stops_bytes).hexdigest(),
+                "routes_sha256": hashlib.sha256(routes_bytes).hexdigest(),
             },
             indent=2,
         )
@@ -74,6 +82,7 @@ def main():
     )
 
     print(f"Wrote {stops_path}")
+    print(f"Wrote {routes_path}")
     print(f"Wrote {metadata_path}")
 
 
