@@ -1,64 +1,29 @@
+import os
+
 from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from services.gtfs import (
-    get_live_bus_response,
-    get_live_train_response,
-    resolve_stop_id,
-    search_station_code,
-)
+from routes.bus import router as bus_router
+from routes.health import router as health_router
+from routes.stations import router as stations_router
+from routes.train import router as train_router
 
 
 app = FastAPI()
+app.include_router(health_router)
+app.include_router(stations_router)
+app.include_router(bus_router)
+app.include_router(train_router)
 
-bus_cache: dict[str, tuple[list[dict], float]] = {}
-CACHE_TTL_SECONDS = 20
+FRONTEND_ORIGINS = os.getenv("FRONTEND_ORIGINS")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[FRONTEND_ORIGINS],
     allow_methods=["GET"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
-
-
-@app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
-
-
-@app.get("/stations/search")
-def search_stations(q: str):
-    return search_station_code(q)
-
-
-@app.get("/live/bus")
-def live_bus(query: str):
-    """
-    User-facing bus endpoint.
-
-    The frontend has a single text input. The user may enter either:
-    - a stop number, such as 842
-    - a stop name, such as Abbey Street
-
-    We resolve that value to the GTFS stop_id before querying the realtime API.
-    """
-    return get_live_bus_response(query)
-
-
-@app.get("/live/train")
-def live_train(station_code: str):
-    return get_live_train_response(station_code)
-
-
-__all__ = [
-    "app",
-    "health",
-    "search_stations",
-    "live_bus",
-    "live_train",
-    "resolve_stop_id",
-]
