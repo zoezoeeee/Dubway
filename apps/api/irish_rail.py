@@ -1,5 +1,7 @@
-import requests
 import xml.etree.ElementTree as ET
+
+import certifi
+import requests
 
 BASE_URL = "http://api.irishrail.ie/realtime/realtime.asmx"
 NS = {"ns": "http://api.irishrail.ie/realtime/"}
@@ -7,7 +9,12 @@ NS = {"ns": "http://api.irishrail.ie/realtime/"}
 
 def get_station_trains(station_code: str, num_mins: int = 90):
     url = f"{BASE_URL}/getStationDataByCodeXML_WithNumMins"
-    resp = requests.get(url, params={"StationCode": station_code, "NumMins": num_mins}, timeout=10)
+    resp = requests.get(
+        url,
+        params={"StationCode": station_code, "NumMins": num_mins},
+        timeout=10,
+        verify=certifi.where(),
+    )
     resp.raise_for_status()
     root = ET.fromstring(resp.content)
 
@@ -30,7 +37,12 @@ def get_station_trains(station_code: str, num_mins: int = 90):
 
 def find_station_code(name_query: str):
     url = f"{BASE_URL}/getStationDataByNameXML"
-    resp = requests.get(url, params={"StationDesc": name_query}, timeout=10)
+    resp = requests.get(
+        url,
+        params={"StationDesc": name_query},
+        timeout=10,
+        verify=certifi.where(),
+    )
     resp.raise_for_status()
     root = ET.fromstring(resp.content)
     results = []
